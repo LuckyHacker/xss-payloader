@@ -1,4 +1,5 @@
 import requests
+import webbrowser
 import urllib.parse
 
 from tqdm import tqdm
@@ -8,11 +9,13 @@ from bs4 import BeautifulSoup as bs
 class XSSPayloader:
 
     def __init__(self, username="test", password="test",
-                    wordlist_path="payloads.lst", delete_payloads=True):
+                    wordlist_path="payloads.lst", delete_payloads=True,
+                    show_payload=False):
         self.username = username
         self.password = password
         self.wordlist_path = wordlist_path
         self.delete_payloads = delete_payloads
+        self.show_payload = show_payload
 
         self.gruyere_url = "https://google-gruyere.appspot.com"
 
@@ -60,6 +63,12 @@ class XSSPayloader:
 
                 if payload in resp.text:
                     self.successful_payloads.append(payload)
+
+                    if self.show_payload:
+                        with open("index.html", "w") as f:
+                            f.write(resp.text)
+
+                        webbrowser.open("index.html")
 
                 if self.delete_payloads:
                     resp = self.s.get(self.snippet_delete_url)
